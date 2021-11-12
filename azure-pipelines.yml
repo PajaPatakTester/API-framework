@@ -1,0 +1,34 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  displayName: 'NuGet restore'
+  inputs:
+    restoreSolution: '$(solution)'
+    feedsToUse: 'select'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run API regression tests'
+  timeoutInMinutes: 30
+  inputs:
+    command: 'test'
+    projects: '**/Tests.csproj'
+
+schedules:
+  - cron: "0 4 * * *"
+    displayName: Daily scheduled run
+    branches:
+      include:
+        - main
+    always: true
